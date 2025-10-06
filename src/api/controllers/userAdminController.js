@@ -1,30 +1,57 @@
 const User = require("../../models/userSchema");
-
-function mapUserForAdmin(u) {
-  return {
-    id: u._id.toString(),
-    name: u.name || u.user_name || "",
-    email: u.email || "",
-    role: u.role === "candidate" ? "Candidate" : "Recruiter",
-    status:
-      (u.status || "inactive").charAt(0).toUpperCase() +
-      (u.status || "inactive").slice(1),
-    joinDate: u.createdAt ? u.createdAt.toISOString().slice(0, 10) : "",
-    phone: u.phone_number || "",
-    position: u.position || "",
-    experience:
-      Array.isArray(u.experience) && u.experience.length > 0
-        ? u.experience[0].duration || ""
-        : "",
-  };
-}
+const { getPaginatedResults } = require("../../utility/paginate");
 
 exports.listUsersForAdmin = async (req, res, next) => {
   try {
-    const users = await User.find({}).sort({ createdAt: -1 }).lean();
-    const data = users.map(mapUserForAdmin);
-    res.send({ status: true, message: "Users list", data });
+    // Extract query parameters
+    const { page = 1, limit = 10, search = "" } = req.query;
+    console.log("------ ~ search:------", search);
+
+    const pageNum = Math.max(Number(page) || 1, 1);
+    const limitNum = Math.max(Number(limit) || 10, 1);
+
+    // Build search filter (name or email), always exclude admin users
+    const baseFilter = { role: { $ne: "admin" } };
+
+    const searchFilter = search
+      ? {
+          $or: [
+            { name: { $regex: search, $options: "i" } },
+            { email: { $regex: search, $options: "i" } },
+          ],
+        }
+      : {};
+
+    const filter = { ...baseFilter, ...searchFilter };
+    console.log("------ ~ filter:------", filter, JSON.stringify(filter));
+
+    // Get paginated results
+    const paginated = await getPaginatedResults(User, filter, {
+      page: pageNum,
+      limit: limitNum,
+      sort: { createdAt: -1 },
+      lean: true,
+    });
+
+    const { results, pagination } = paginated.data;
+
+    // Statistics (always exclude admin users)
+    const stats = {
+      totalUsers: await User.countDocuments({ role: { $ne: "admin" } }),
+      totalCandidates: await User.countDocuments({ role: "candidate" }),
+      totalEmployers: await User.countDocuments({ role: "employer" }),
+    };
+
+    // Send response
+    res.status(200).json({
+      status: true,
+      message: "Users list fetched successfully",
+      data: results,
+      stats,
+      pagination,
+    });
   } catch (err) {
+    console.error("Error in listUsersForAdmin:", err);
     next(err);
   }
 };

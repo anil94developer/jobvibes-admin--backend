@@ -40,12 +40,6 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-router.post("/step-1", authenticate, step1Controller);
-router.post("/step-2", authenticate, step2Controller);
-router.post("/step-3", authenticate, step3Controller);
-
-router.get("/skills", authenticate, skillsController);
-
 router.post("/update", authenticate, updateController);
 
 router.post(

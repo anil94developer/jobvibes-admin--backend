@@ -9,7 +9,7 @@ async function run() {
     useNewUrlParser: true,
   });
 
-  const email = process.env.ADMIN_EMAIL || "admin@jobvibes.test";
+  const email = process.env.ADMIN_EMAIL || "admin.jobvibe@yopmail.com";
   const password = process.env.ADMIN_PASSWORD || "Admin@123";
 
   const existing = await User.findOne({ email });
@@ -26,7 +26,7 @@ async function run() {
     email,
     password, // plaintext to match current auth service check
     role: "employer",
-    name: "JobVibes Admin",
+    name: "JobVibes",
     status: "active",
     company_name: "JobVibes",
   });

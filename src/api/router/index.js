@@ -17,7 +17,6 @@ router.use("/jobs", require("./v1/jobsRoutes"));
 router.use("/resumes", require("./v1/resumesRoutes"));
 router.use("/applications", require("./v1/applicationsRoutes"));
 router.use("/notifications", require("./v1/notificationRoutes"));
-router.use("/analytics", require("./v1/analyticsRoutes"));
 router.use("/settings", require("./v1/settingsRoutes"));
 router.use("/files", require("./v1/filesRoutes"));
 router.use("/messages", require("./v1/messagesRoutes"));
