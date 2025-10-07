@@ -13,7 +13,7 @@ router.use("/v1/admin", require("./v1/adminRoutes"));
 // Non-versioned mounts to support dashboard endpoints (e.g., /api/auth/login)
 router.use("/auth", require("./v1/authRoutes"));
 router.use("/users", require("./v1/userRoutes"));
-router.use("/jobs", require("./v1/jobsRoutes"));
+router.use("/feeds", require("./v1/feedsRoutes"));
 router.use("/resumes", require("./v1/resumesRoutes"));
 router.use("/applications", require("./v1/applicationsRoutes"));
 router.use("/notifications", require("./v1/notificationRoutes"));

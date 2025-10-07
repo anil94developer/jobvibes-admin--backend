@@ -10,6 +10,8 @@ const {
   deleteJobController,
   publishJobController,
   unpublishJobController,
+  acceptFeedController,
+  rejectFeedController,
 } = require("../../controllers/jobController");
 
 // GET /jobs
@@ -37,7 +39,13 @@ router.post("/", authenticate, createJobController);
 router.get("/:id", authenticate, getJobByIdController);
 
 // PUT /jobs/:id
-router.put("/:id", authenticate, updateJobController);
+router.put("/:id/accept", authenticate, acceptFeedController);
+
+// PUT /jobs/:id
+router.put("/:id/reject", authenticate, rejectFeedController);
+
+// PUT /jobs/:id
+router.put("/:id/", authenticate, updateJobController);
 
 // DELETE /jobs/:id
 router.delete("/:id", authenticate, deleteJobController);

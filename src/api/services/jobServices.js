@@ -1,4 +1,4 @@
-const Job = require("../../models/jobSchema");
+const Feed = require("../../models/feedSchema");
 const { getPaginatedResults } = require("../../utility/paginate");
 
 exports.listJobsService = async (req) => {
@@ -14,7 +14,7 @@ exports.listJobsService = async (req) => {
     if (status) filter.status = status;
     if (source) filter.source = source;
 
-    return await getPaginatedResults(Job, filter, {
+    return await getPaginatedResults(Feed, filter, {
       page,
       limit,
       sort: { createdAt: -1 },
@@ -33,7 +33,7 @@ exports.listJobsService = async (req) => {
 
 exports.getJobByIdService = async (req) => {
   try {
-    const job = await Job.findById(req.params.id).lean();
+    const job = await Feed.findById(req.params.id).lean();
     if (!job) return { status: false, message: "Job not found", data: {} };
     return { status: true, message: "Job fetched", data: job };
   } catch (error) {
@@ -41,9 +41,37 @@ exports.getJobByIdService = async (req) => {
   }
 };
 
+exports.acceptFeedService = async (req) => {
+  try {
+    const updated = await Feed.findByIdAndUpdate(
+      req.params.id,
+      { status: "approved" },
+      { new: true }
+    ).lean();
+    if (!updated) return { status: false, message: "Job not found", data: {} };
+    return { status: true, message: "Job approved", data: updated };
+  } catch (error) {
+    return { status: false, message: error.message, data: {} };
+  }
+};
+
+exports.rejectFeedService = async (req) => {
+  try {
+    const updated = await Feed.findByIdAndUpdate(
+      req.params.id,
+      { status: "rejected" },
+      { new: true }
+    ).lean();
+    if (!updated) return { status: false, message: "Job not found", data: {} };
+    return { status: true, message: "Job rejected", data: updated };
+  } catch (error) {
+    return { status: false, message: error.message, data: {} };
+  }
+};
+
 exports.createJobService = async (req) => {
   try {
-    const created = await Job.create(req.body);
+    const created = await Feed.create(req.body);
     return { status: true, message: "Job created", data: created };
   } catch (error) {
     return { status: false, message: error.message, data: {} };
@@ -52,7 +80,7 @@ exports.createJobService = async (req) => {
 
 exports.updateJobService = async (req) => {
   try {
-    const updated = await Job.findByIdAndUpdate(req.params.id, req.body, {
+    const updated = await Feed.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
     }).lean();
     if (!updated) return { status: false, message: "Job not found", data: {} };
@@ -64,7 +92,7 @@ exports.updateJobService = async (req) => {
 
 exports.deleteJobService = async (req) => {
   try {
-    const deleted = await Job.findByIdAndDelete(req.params.id).lean();
+    const deleted = await Feed.findByIdAndDelete(req.params.id).lean();
     if (!deleted) return { status: false, message: "Job not found", data: {} };
     return { status: true, message: "Job deleted", data: {} };
   } catch (error) {
@@ -74,7 +102,7 @@ exports.deleteJobService = async (req) => {
 
 exports.publishJobService = async (req) => {
   try {
-    const updated = await Job.findByIdAndUpdate(
+    const updated = await Feed.findByIdAndUpdate(
       req.params.id,
       { status: "open" },
       { new: true }
@@ -88,7 +116,7 @@ exports.publishJobService = async (req) => {
 
 exports.unpublishJobService = async (req) => {
   try {
-    const updated = await Job.findByIdAndUpdate(
+    const updated = await Feed.findByIdAndUpdate(
       req.params.id,
       { status: "paused" },
       { new: true }
