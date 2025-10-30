@@ -1,4 +1,7 @@
 const express = require("express");
+const multer = require("multer");
+const fs = require("fs");
+const path = require("path");
 const router = express.Router();
 
 const { authenticate } = require("../../middleware/authMiddleware");
@@ -12,7 +15,52 @@ const {
   unpublishJobController,
   acceptFeedController,
   rejectFeedController,
+  uploadVideoController,
 } = require("../../controllers/jobController");
+
+// -----------------------------
+// Multer setup for video/media upload
+// -----------------------------
+const uploadDir = path.join(process.cwd(), "uploads", "videos");
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueName =
+      Date.now() +
+      "-" +
+      Math.round(Math.random() * 1e9) +
+      path.extname(file.originalname);
+    cb(null, uniqueName);
+  },
+});
+
+const fileFilter = (req, file, cb) => {
+  const allowedTypes = [
+    "video/mp4",
+    "video/mkv",
+    "video/quicktime",
+    "video/webm",
+    "video/ogg",
+  ];
+  if (allowedTypes.includes(file.mimetype)) cb(null, true);
+  else cb(new Error("Invalid file type. Only video formats allowed."), false);
+};
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 100 * 1024 * 1024 }, // 100MB
+  fileFilter,
+});
+
+// -----------------------------
+// Routes
+// -----------------------------
 
 // GET /jobs
 router.get("/", authenticate, listJobsController);
@@ -29,23 +77,23 @@ router.get("/draft", authenticate, (req, res, next) => {
   return listJobsController(req, res, next);
 });
 
-// GET /jobs/search?q=...
+// GET /jobs/search
 router.get("/search", authenticate, listJobsController);
 
 // POST /jobs
-router.post("/", authenticate, createJobController);
+router.post("/", authenticate, upload.array("media", 5), createJobController);
 
 // GET /jobs/:id
 router.get("/:id", authenticate, getJobByIdController);
 
-// PUT /jobs/:id
+// PUT /jobs/:id/accept
 router.put("/:id/accept", authenticate, acceptFeedController);
 
-// PUT /jobs/:id
+// PUT /jobs/:id/reject
 router.put("/:id/reject", authenticate, rejectFeedController);
 
 // PUT /jobs/:id
-router.put("/:id/", authenticate, updateJobController);
+router.put("/:id", authenticate, updateJobController);
 
 // DELETE /jobs/:id
 router.delete("/:id", authenticate, deleteJobController);
@@ -56,9 +104,12 @@ router.post("/:id/publish", authenticate, publishJobController);
 // POST /jobs/:id/unpublish
 router.post("/:id/unpublish", authenticate, unpublishJobController);
 
-// POST /jobs/:id/video (TODO: implement upload handling)
-router.post("/:id/video", authenticate, (req, res) => {
-  res.send({ status: true, message: "Video uploaded", data: {} });
-});
+// POST /jobs/:id/video
+router.post(
+  "/:id/video",
+  authenticate,
+  upload.array("video", 3),
+  uploadVideoController
+);
 
 module.exports = router;

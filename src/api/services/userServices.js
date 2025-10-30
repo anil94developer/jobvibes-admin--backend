@@ -6,16 +6,18 @@ const File = require("../../models/fileSchema"); // import your File schema
 const Skill = require("../../models/skillsSchema");
 const { destructureUser } = require("../../utility/responseFormat");
 const notificationEmitter = require("../../emitter/notificationEmitter");
-const cloudinary = require("cloudinary").v2;
 const fs = require("fs");
-const CONSTANT = require("../../utility/constant");
+const path = require("path");
+const FileModel = require("../../models/fileSchema");
 const { getPaginatedResults } = require("../../utility/paginate");
 
-cloudinary.config({
-  cloud_name: CONSTANT.CLOUDINARY_CLOUD_NAME,
-  api_key: CONSTANT.CLOUDINARY_API_KEY,
-  api_secret: CONSTANT.CLOUDINARY_API_SECRET,
-});
+// Build absolute URL for a path ("/uploads/...")
+const buildAbsoluteUrl = (pathOrUrl, req) => {
+  if (!pathOrUrl) return pathOrUrl;
+  if (/^https?:\/\//i.test(pathOrUrl)) return pathOrUrl;
+  const base = `${req.protocol}://${req.get("host")}`;
+  return `${base}${pathOrUrl.startsWith("/") ? "" : "/"}${pathOrUrl}`;
+};
 
 // --- Candidate step 1 Service ---
 exports.step1Services = async (req) => {
@@ -369,18 +371,27 @@ exports.uploadServices = async (req) => {
 
     const uploads = await Promise.all(
       req.files.map(async (file) => {
-        const result = await cloudinary.uploader.upload(file.path, {
-          resource_type: "auto",
-        });
+        // Ensure path is normalized and create a public URL prefixed with "/"
+        const relativePath = path
+          .relative(process.cwd(), file.path)
+          .replace(/\\/g, "/");
+        const publicUrl = `/${relativePath}`;
 
-        fs.unlinkSync(file.path);
-
-        return {
+        // Persist file metadata (optional but useful)
+        const fileDoc = await FileModel.create({
           filename: file.filename,
           originalName: file.originalname,
-          size: result.bytes,
-          url: result.secure_url,
-          public_id: result.public_id,
+          path: file.path,
+          size: file.size,
+          url: publicUrl,
+        });
+
+        return {
+          id: fileDoc._id,
+          filename: file.filename,
+          originalName: file.originalname,
+          size: file.size,
+          url: buildAbsoluteUrl(publicUrl, req),
         };
       })
     );

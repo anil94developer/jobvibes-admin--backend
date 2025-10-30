@@ -4,7 +4,9 @@ const adminService = require("../services/adminService");
 // 🧠 Dashboard overview
 const getDashboard = async (req, res) => {
   try {
+    console.log("Request body in getDashboard:--", req.body);
     const dashboardData = await adminService.getDashboard();
+    console.log("Response in getDashboard:--", dashboardData);
     sendResponse(res, {
       statusCode: 200,
       message: "Dashboard data fetched successfully",

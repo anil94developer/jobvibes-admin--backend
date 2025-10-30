@@ -5,7 +5,6 @@ exports.listUsersForAdmin = async (req, res, next) => {
   try {
     // Extract query parameters
     const { page = 1, limit = 10, search = "" } = req.query;
-    console.log("------ ~ search:------", search);
 
     const pageNum = Math.max(Number(page) || 1, 1);
     const limitNum = Math.max(Number(limit) || 10, 1);
@@ -23,7 +22,6 @@ exports.listUsersForAdmin = async (req, res, next) => {
       : {};
 
     const filter = { ...baseFilter, ...searchFilter };
-    console.log("------ ~ filter:------", filter, JSON.stringify(filter));
 
     // Get paginated results
     const paginated = await getPaginatedResults(User, filter, {

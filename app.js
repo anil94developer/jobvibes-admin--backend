@@ -41,7 +41,7 @@ mongoose.connection.on("error", (err) => {
 });
 
 // Serve static files
-app.use("/uploads", express.static(path.resolve("src/uploads")));
+app.use("/uploads", express.static(path.resolve("uploads")));
 
 // Body parsers
 app.use(express.json());

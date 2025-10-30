@@ -9,7 +9,7 @@ const FeedSchema = new mongoose.Schema(
     },
     authorRole: {
       type: String,
-      enum: ["candidate", "employer"],
+      enum: ["candidate", "employer", "admin"],
       required: true,
     },
     status: {
@@ -38,6 +38,10 @@ const FeedSchema = new mongoose.Schema(
     },
 
     noOfReactions: {
+      type: Number,
+      default: 0,
+    },
+    noOfApplications: {
       type: Number,
       default: 0,
     },

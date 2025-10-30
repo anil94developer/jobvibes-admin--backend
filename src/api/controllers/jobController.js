@@ -8,6 +8,7 @@ const {
   unpublishJobService,
   acceptFeedService,
   rejectFeedService,
+  uploadVideoService,
 } = require("../services/jobServices");
 
 exports.listJobsController = async (req, res, next) => {
@@ -70,6 +71,8 @@ exports.rejectFeedController = async (req, res, next) => {
 exports.createJobController = async (req, res, next) => {
   try {
     console.log("Request parameters in create job API controller:--", req.body);
+    console.log("Uploaded files in create job API controller:--", req.files);
+
     const data = await createJobService(req);
     res.send(data);
     console.log("Response parameters in create job API controller:--", data);
@@ -133,17 +136,19 @@ exports.unpublishJobController = async (req, res, next) => {
   }
 };
 
-exports.createUserController = async (req, res, next) => {
+exports.uploadVideoController = async (req, res, next) => {
   try {
     console.log(
-      "Request parameters in register user API controller:--",
+      "Request parameters in upload video API controller:--",
       req.body
     );
-    const data = await createUserServices(req);
+    console.log("Uploaded files in upload video API controller:--", req.files);
+
+    const data = await uploadVideoService(req);
     res.send(data);
-    console.log("Response parameters in register user API controller:--", data);
+    console.log("Response parameters in upload video API controller:--", data);
   } catch (error) {
-    console.log("Error in register user API controller:--", error);
+    console.log("Error in upload video API controller:--", error);
     next(error);
   }
 };

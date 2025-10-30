@@ -1,26 +1,31 @@
 const User = require("../../models/userSchema");
 const Job = require("../../models/feedSchema");
 const Reaction = require("../../models/reactionSchema");
+const Application = require("../../models/applySchema");
 
 exports.getDashboard = async () => {
   // Run all count queries in parallel for performance
-  const [usersCount, jobsCount, matchesCount] = await Promise.all([
-    User.countDocuments(),
-    Job.countDocuments(),
-    Reaction.countDocuments(), // 👈 Count all reactions (matches)
-  ]);
+  const [usersCount, jobsCount, matchesCount, applicationsCount] =
+    await Promise.all([
+      // ✅ Count only users whose role is NOT 'admin'
+      User.countDocuments({ role: { $ne: "admin" } }),
+      Job.countDocuments(),
+      Reaction.countDocuments(),
+      Application.countDocuments({ is_applied: true }),
+    ]);
 
   // Return unified dashboard data
   return {
     users: usersCount,
     jobs: jobsCount,
-    matches: matchesCount, // 👈 Add matches field
+    matches: matchesCount,
+    applications: applicationsCount,
   };
 };
 
 exports.getUsers = async () => {
   const [total, active] = await Promise.all([
-    User.countDocuments(),
+    User.countDocuments({ role: { $ne: "admin" } }),
     User.countDocuments({ isActive: true }),
   ]);
 
