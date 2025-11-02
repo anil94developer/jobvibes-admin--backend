@@ -52,6 +52,184 @@ exports.getCitiesByStateServices = async (req) => {
   }
 };
 
+// Create City Service
+exports.createCityServices = async (req) => {
+  try {
+    const { stateId } = req.params;
+    const { name } = req.body;
+    const state = stateId; // Use stateId from params
+
+    if (!name || !name.trim()) {
+      return {
+        status: false,
+        message: "City name is required",
+        data: {},
+      };
+    }
+
+    if (!state) {
+      return {
+        status: false,
+        message: "State ID is required",
+        data: {},
+      };
+    }
+
+    // Check if state exists
+    const stateExists = await State.findById(state);
+    if (!stateExists) {
+      return {
+        status: false,
+        message: "State not found",
+        data: {},
+      };
+    }
+
+    // Check if city already exists in this state
+    const existingCity = await City.findOne({
+      name: name.trim(),
+      state: state,
+    });
+
+    if (existingCity) {
+      return {
+        status: false,
+        message: "City already exists in this state",
+        data: {},
+      };
+    }
+
+    // Create new city
+    const city = await City.create({
+      name: name.trim(),
+      state: state,
+    });
+
+    return {
+      status: true,
+      message: "City created successfully",
+      data: city,
+    };
+  } catch (err) {
+    console.error("Error creating city:", err);
+    return {
+      status: false,
+      message: err.message || "Failed to create city",
+      data: {},
+    };
+  }
+};
+
+// Update City Service
+exports.updateCityServices = async (req) => {
+  try {
+    const { cityId } = req.params;
+    const { name } = req.body;
+
+    if (!cityId) {
+      return {
+        status: false,
+        message: "City ID is required",
+        data: {},
+      };
+    }
+
+    if (!name || !name.trim()) {
+      return {
+        status: false,
+        message: "City name is required",
+        data: {},
+      };
+    }
+
+    // Check if city exists
+    const city = await City.findById(cityId);
+    if (!city) {
+      return {
+        status: false,
+        message: "City not found",
+        data: {},
+      };
+    }
+
+    // Check if another city with the same name exists in this state
+    const existingCity = await City.findOne({
+      name: name.trim(),
+      state: city.state,
+      _id: { $ne: cityId },
+    });
+
+    if (existingCity) {
+      return {
+        status: false,
+        message: "City with this name already exists in this state",
+        data: {},
+      };
+    }
+
+    // Update city
+    const updatedCity = await City.findByIdAndUpdate(
+      cityId,
+      { name: name.trim() },
+      { new: true, runValidators: true }
+    );
+
+    return {
+      status: true,
+      message: "City updated successfully",
+      data: updatedCity,
+    };
+  } catch (err) {
+    console.error("Error updating city:", err);
+    return {
+      status: false,
+      message: err.message || "Failed to update city",
+      data: {},
+    };
+  }
+};
+
+// Delete City Service
+exports.deleteCityServices = async (req) => {
+  try {
+    const { cityId } = req.params;
+
+    if (!cityId) {
+      return {
+        status: false,
+        message: "City ID is required",
+        data: {},
+      };
+    }
+
+    // Check if city exists
+    const city = await City.findById(cityId);
+    if (!city) {
+      return {
+        status: false,
+        message: "City not found",
+        data: {},
+      };
+    }
+
+    // Delete city
+    await City.findByIdAndDelete(cityId);
+
+    return {
+      status: true,
+      message: "City deleted successfully",
+      data: {},
+    };
+  } catch (err) {
+    console.error("Error deleting city:", err);
+    return {
+      status: false,
+      message: err.message || "Failed to delete city",
+      data: {},
+    };
+  }
+};
+
 exports.getJobTitleServices = async (req) => {
   try {
     const { search = "", page = 1, limit = 10 } = req.query;

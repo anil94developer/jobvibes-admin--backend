@@ -15,6 +15,9 @@ const {
   getStatesServices,
   getCitiesByStateServices,
   getJobTitleServices,
+  createCityServices,
+  updateCityServices,
+  deleteCityServices,
 } = require("../services/apiServices");
 
 exports.createUserController = async (req, res, next) => {
@@ -205,6 +208,43 @@ exports.getJobTitleController = async (req, res, next) => {
     console.log("Response parameters in get States API controller:--", data);
   } catch (error) {
     console.log("Error in get States API controller:--", error);
+    next(error);
+  }
+};
+
+// City CRUD Controllers
+exports.createCityController = async (req, res, next) => {
+  try {
+    console.log("Request parameters in create City API controller:--", req.body);
+    const data = await createCityServices(req);
+    res.send(data);
+    console.log("Response parameters in create City API controller:--", data);
+  } catch (error) {
+    console.log("Error in create City API controller:--", error);
+    next(error);
+  }
+};
+
+exports.updateCityController = async (req, res, next) => {
+  try {
+    console.log("Request parameters in update City API controller:--", req.body);
+    const data = await updateCityServices(req);
+    res.send(data);
+    console.log("Response parameters in update City API controller:--", data);
+  } catch (error) {
+    console.log("Error in update City API controller:--", error);
+    next(error);
+  }
+};
+
+exports.deleteCityController = async (req, res, next) => {
+  try {
+    console.log("Request parameters in delete City API controller:--", req.params);
+    const data = await deleteCityServices(req);
+    res.send(data);
+    console.log("Response parameters in delete City API controller:--", data);
+  } catch (error) {
+    console.log("Error in delete City API controller:--", error);
     next(error);
   }
 };
